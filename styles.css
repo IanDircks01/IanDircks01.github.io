@@ -1,0 +1,21 @@
+body {
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+}
+
+#rrrButton {
+    background-color: #181825;
+    border: #11111b 1px;
+    color: #cdd6f4;
+    padding: 10px 15px 10px 15px;
+    border-radius: 5px;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+#rrrButton:hover {
+    cursor: pointer;
+}
+
+#rrrButton:active {
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}

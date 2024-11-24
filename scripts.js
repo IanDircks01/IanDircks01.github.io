@@ -1,0 +1,88 @@
+
+const rrrSongs = new Map([
+    [101, "The Temples of Syrinx – (Rush)"],
+    [102, "Blues Before & After (The Smithereens)"],
+    [103, "Break on Through (The Doors)"],
+    [104, "Crocodile Rock  (Elton John)"],
+    [105, "Do it Again (Steely Dan)"],
+    [106, "Don’t You (Candlebox)"],
+    [107, "Drivin’ Rain  (Gov’t Mule)"],
+    [108, "Eight Miles High (The Byrds)"],
+    [109, "Fantasy  (Aldo Nova)"],
+    [110, "Fool (Rollins Band)"],
+    [111, "For The Love Of God  (Steve Vai)"],
+    [112, "Free Bird (Lynyrd Skynyrd)"],
+    [113, "Immigrant Song (Led Zeppelin)"],
+    [114, "Just Because (Jane’s Addiction)"],
+    [115, "Live (Lenny Kravitz)"],
+    [116, "Mexicola (Queens of the Stone Age)"],
+    [117, "Rock Instrumental"],
+    [118, "Latin/jazz/funk instrumental"],
+    [119, "Rock Instrumental"],
+    [120, "Rock Instrumental"],
+    [121, "Runnin’ Down a Dream (Tom Petty)"],
+    [122, "Start Me Up (The Rolling Stones)"],
+    [123, "Stockholm Syndrome (Muse)"],
+    [124, "Diary of Jane (Breaking Benjamin)"],
+    [125, "R&B/soul"],
+    [126, "Rock Instrumental"],
+    [127, "Urgent (Foreigner)"],
+    [128, "Vertigo  (U2)"],
+    [129, "Wheel in the Sky (Journey)"],
+    [130, "Won’t Get Fooled Again  (The Who)"],
+    [131, "Klein Mandelbrot (Blue Man Group)"],
+    [132, "Drumbone  (Blue Man Group)"],
+    [182, "All the Small Things (Blink 182)"],
+    [183, "What’s my age again? (Blink 182)"],
+    [301, "Float On  (Modest Mouse)"],
+    [302, "I Want You Back (The Jackson Five)"],
+    [303, "In My Pocket  (The Cat Empire)"],
+    [304, "It’s Still Rock And Roll To Me (Billy Joel)"],
+    [305, "Brothers Gonna Work It Out (Public Enemy)"],
+    [306, "Lose Yourself  (Eminem)"],
+    [307, "Ride Like The Wind (Christopher Cross)"],
+    [308, "Run to You (Bryan Adams)"],
+    [309, "Save Room (John Legend)"],
+    [310, "Vogue (Madonna)"],
+    [311, "You Make Loving Fun (Fleetwood Mac)"],
+    [312, "My Everything (Barry White)"],
+    [501, "Latin/jazz/rock instrumental"],
+    [502, "Country/bluegrass instrumental"],
+    [503, "Funk instrumental"],
+    [504, "Smokin Gun (Robert Cray)"],
+    [505, "Jazz Instrumental"],
+    [506, "The Thrill Is Gone (B.B. King)"],
+    [507, "Who Did You Think I Was (John Mayer)"],
+    [508, "Pivot (Dry)"],
+    [701, "Cyanide (Metallica)"],
+    [702, "Endangered Species (Flaw)"],
+    [703, "For Whom The Bell Tolls  (Metallica)"],
+    [704, "Forever Down (Black Label Society)"],
+    [705, "How Heavy This Axe (The Sword)"],
+    [706, "Just One Fix (Ministry)"],
+    [707, "Know your Enemy (Rage Against the Machine)"],
+    [708, "Let’s Go (Ministry)"],
+    [709, "Mouth for War (Pantera)"],
+    [710, "Painkiller (Judas Priest)"],
+    [711, "Paranoid  (Black Sabbath)"],
+    [712, "Temptation’s Wings (Down)"],
+    [713, "The Wicker Man (Iron Maiden)"],
+    [714, "Unreal (Ill Nino)"],
+    [715, "Wake Up Dead (Megadeth)"],
+    [716, "We Call This Mutha Revenge (Suicidal Tendencies)"],
+    [718, "You’ve Got Another Thing Comin (Judas Priest)"],
+    [901, "Moving Right Along (The Muppets)"],
+    [902, "The Rainbow Connection (The Muppets)"]
+]);
+
+function getRandomObjectFromMap(map) {
+    const keys = Array.from(map.keys());
+    const randomIndex = Math.floor(Math.random() * keys.length);
+    const randomKey = keys[randomIndex];
+    return [randomKey, map.get(randomKey)];
+}
+
+function pickRandomSong() {
+    const song = getRandomObjectFromMap(rrrSongs);
+    alert(`Song: ${song[1]}\nCode: ${song[0]}`);
+}
