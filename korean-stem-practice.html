@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Verb Conjugation Quiz</title>
+    <link rel="icon" type="image/x-icon" href="https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">Korean Verb Conjugation Quiz</h1>
+        <p class="text-lg mb-2">Stem: <span lang="ko" id="stem" class="font-semibold"></span></p>
+        <p class="text-sm mb-4 text-gray-600">Enter the simple present tense (아/어요 form)</p>
+        <input id="answerInput" type="text" class="w-full p-2 border rounded mb-4" placeholder="Type your answer here" lang="ko">
+        <button id="submitBtn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Submit</button>
+        <p id="feedback" lang="ko" class="text-center"></p>
+        <p class="mt-2 text-center">Score: <span id="score">0</span> / <span id="total">0</span></p>
+        <button id="nextBtn" class="w-full bg-green-500 text-white p-2 rounded mt-4 hover:bg-green-600 hidden">Next Question</button>
+    </div>
+
+    <script>
+        const verbs = [
+            { english: "to sleep", stem: "자다", answer: "자요" },
+            { english: "to be pretty", stem: "예쁘다", answer: "예뻐요" },
+            { english: "to be", stem: "이다", answer: "(이)에요" },
+            { english: "to not be", stem: "아니다", answer: "아니에요" },
+            { english: "to make", stem: "만들다", answer: "만들어요" },
+            { english: "to read", stem: "읽다", answer: "읽어요" },
+            { english: "to be small", stem: "작다", answer: "작아요" },
+            { english: "to exist/have", stem: "있다", answer: "있어요" },
+            { english: "to not exist/have", stem: "없다", answer: "없어요" },
+            { english: "to sit", stem: "앉다", answer: "앉아요" },
+            { english: "to live", stem: "살다", answer: "살아요" },
+            { english: "to go", stem: "가다", answer: "가요" },
+            { english: "to meet", stem: "만나다", answer: "만나요" },
+            { english: "to come", stem: "오다", answer: "와요" },
+            { english: "to take out/withdraw", stem: "꺼내다", answer: "꺼내요" },
+            { english: "to stand", stem: "서다", answer: "서요" },
+            { english: "to learn", stem: "배우다", answer: "배워요" },
+            { english: "to drink", stem: "마시다", answer: "마셔요" },
+            { english: "to speak", stem: "말하다", answer: "말해요" },
+            { english: "to call (phone)", stem: "전화하다", answer: "전화해요" },
+            { english: "to exercise", stem: "운동하다", answer: "운동해요" },
+            { english: "to work", stem: "일하다", answer: "일해요" },
+            { english: "to (do) homework", stem: "숙제하다", answer: "숙제해요" },
+            { english: "to arrive", stem: "도착하다", answer: "도착해요" },
+            { english: "to eat", stem: "먹다", answer: "먹어요" },
+            { english: "to use/write", stem: "쓰다", answer: "써요" },
+            { english: "to take", stem: "타다", answer: "타요" },
+            { english: "to be far", stem: "멀다", answer: "멀어요" },
+            { english: "to be inconvenient", stem: "불편하다", answer: "불편해요" },
+            { english: "to be hot", stem: "덥다", answer: "더워요" },
+            { english: "to walk", stem: "걷다", answer: "걸어요" },
+            { english: "to listen", stem: "듣다", answer: "들어요" },
+            { english: "to wear", stem: "입다", answer: "입어요" },
+            { english: "to be cheap", stem: "싸다", answer: "싸요" },
+            { english: "to clean", stem: "청소하다", answer: "청소해요" }
+        ];
+
+        let currentVerb = null;
+        let score = 0;
+        let total = 0;
+
+        const stemElement = document.getElementById('stem');
+        const answerInput = document.getElementById('answerInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const feedbackElement = document.getElementById('feedback');
+        const scoreElement = document.getElementById('score');
+        const totalElement = document.getElementById('total');
+
+        function getRandomVerb() {
+            const randomIndex = Math.floor(Math.random() * verbs.length);
+            return verbs[randomIndex];
+        }
+
+        function loadNewQuestion() {
+            currentVerb = getRandomVerb();
+            stemElement.textContent = currentVerb.stem;
+            answerInput.value = '';
+            answerInput.disabled = false;
+            answerInput.style.userSelect = 'none';
+            feedbackElement.textContent = '';
+            submitBtn.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            answerInput.focus();
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim();
+            total++;
+            if (userAnswer === currentVerb.answer) {
+                score++;
+                confetti({
+                    angle: 155,
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { x: 0.38, y: 0.4 },
+                });
+                confetti({
+                    angle: 25,
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { x: 0.62, y: 0.4 },
+                });
+                feedbackElement.textContent = `Correct! "${currentVerb.stem}" is "${currentVerb.answer}".`;
+                feedbackElement.classList.add('text-green-600');
+                feedbackElement.classList.remove('text-red-600');
+            } else {
+                feedbackElement.textContent = `Incorrect. "${currentVerb.stem}" is "${currentVerb.answer}".`;
+                feedbackElement.classList.add('text-red-600');
+                feedbackElement.classList.remove('text-green-600');
+            }
+            scoreElement.textContent = score;
+            totalElement.textContent = total;
+            answerInput.disabled = true;
+            answerInput.style.userSelect = 'all';
+            submitBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        submitBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', loadNewQuestion);
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Load the first question
+        loadNewQuestion();
+    </script>
+</body>
+</html>
