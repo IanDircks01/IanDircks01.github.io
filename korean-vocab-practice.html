@@ -1,47 +1,4 @@
 <!DOCTYPE html>
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-
-        function loadFileData(filename) {
-            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-                try {
-                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                    var firstSheetName = workbook.SheetNames[0];
-                    var worksheet = workbook.Sheets[firstSheetName];
-
-                    // Convert sheet to JSON to filter blank rows
-                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                    // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                    var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                    // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                    var headerRowIndex = filteredData.findIndex((row, index) =>
-                    row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                    );
-                    // Fallback
-                    if (headerRowIndex === -1 || headerRowIndex > 25) {
-                    headerRowIndex = 0;
-                    }
-
-                    // Convert filtered JSON back to CSV
-                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                    return csv;
-                } catch (e) {
-                    console.error(e);
-                    return "";
-                }
-            }
-
-            return gk_fileData[filename] || "";
-        }
-</script>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -56,13 +13,51 @@
         <h1 class="text-2xl font-bold text-center mb-6">Korean Vocabulary Quiz</h1>
         <div id="score" class="text-center mb-4">Score: 0/0</div>
         <div id="question" class="text-xl font-semibold text-center mb-4"></div>
-        <div id="options" class="space-y-2 mb-4"></div>
-        <button id="hintButton" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mb-4">Show Hint</button>
-        <div id="hint" class="text-sm text-gray-600 italic mb-4 hidden"></div>
+        <div id="inputSection" class="mb-4">
+            <input id="answerInput" type="text" class="w-full p-2 border rounded mb-4" placeholder="Type the English translation">
+            <button id="submitAnswer" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mt-2">Submit Answer</button>
+            <button id="hintWanted" class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 mt-2" style="display: block;">Get Hint</button>
+            <div id="hint" class="text-sm text-gray-600 italic py-2 mt-2" style="display: none;">HINT</div>
+            <button id="switchToMultipleChoice" class="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600 mt-2">Switch to Multiple Choice</button>
+        </div>
+        <div id="options" class="space-y-2 mb-4 hidden"></div>
         <div id="feedback" class="text-center text-lg font-medium"></div>
     </div>
 
-    <script>
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
         const vocabulary = [
             // Week 3: Sentence Structure
             { korean: "사람", english: "person", hint: "You see this being walking around everywhere in a city!" },
@@ -81,7 +76,6 @@
             { korean: "컴퓨터", english: "computer", hint: "You might play Starcraft on this." },
             { korean: "가방", english: "bag", hint: "You carry your books and laptop in this." },
             { korean: "전화", english: "call", hint: "You do this to chat with a friend far away." },
-
             // Week 4: Present Tense Verb Conjugation
             { korean: "가다", english: "to go", hint: "You do this to get to a K-pop concert." },
             { korean: "오다", english: "to come", hint: "You do this when invited to a friend's house." },
@@ -95,7 +89,6 @@
             { korean: "일하다", english: "to work", hint: "You do this at a job to earn money." },
             { korean: "듣다", english: "to listen", hint: "You do this to BTS's latest song." },
             { korean: "만들다", english: "to make", hint: "You do this to create a homemade kimchi." },
-
             // Week 5: Questions & Responses
             { korean: "뭐", english: "what", hint: "You say this when you're confused about something." },
             { korean: "누구", english: "who", hint: "You ask this to find out someone's identity." },
@@ -113,7 +106,6 @@
             { korean: "누구예요?", english: "Who are you/who is it?", hint: "You ask this at the door when someone knocks." },
             { korean: "어디 가요?", english: "Where are you going?", hint: "You ask this when a friend is leaving." },
             { korean: "언제 가요?", english: "When are you going?", hint: "You ask this to plan a trip with someone." },
-
             // Week 6: Places & Activities
             { korean: "에", english: "to/at", hint: "You use this to say you're heading to Seoul." },
             { korean: "에서", english: "from/at", hint: "You use this to say you're calling from Busan." },
@@ -135,7 +127,6 @@
             { korean: "공원", english: "park", hint: "You jog or picnic here." },
             { korean: "병원", english: "hospital", hint: "You visit here when feeling unwell." },
             { korean: "은행", english: "bank", hint: "You save or withdraw money here." },
-
             // Week 7: Numbers & Time
             { korean: "하나", english: "1 (Native)", hint: "The first number you learn in native Korean." },
             { korean: "둘", english: "2 (Native)", hint: "The number of chopsticks you use to eat." },
@@ -163,10 +154,15 @@
         let score = 0;
         let total = 0;
         let checking = false;
+        let isMultipleChoice = false;
 
         const questionElement = document.getElementById('question');
         const optionsElement = document.getElementById('options');
-        const hintButton = document.getElementById('hintButton');
+        const inputSection = document.getElementById('inputSection');
+        const answerInput = document.getElementById('answerInput');
+        const hintWanted = document.getElementById('hintWanted');
+        const submitAnswer = document.getElementById('submitAnswer');
+        const switchToMultipleChoice = document.getElementById('switchToMultipleChoice');
         const hintElement = document.getElementById('hint');
         const feedbackElement = document.getElementById('feedback');
         const scoreElement = document.getElementById('score');
@@ -188,35 +184,41 @@
 
         function loadQuestion() {
             checking = false;
+            isMultipleChoice = false;
             currentQuestion = getRandomQuestion();
+            hintElement.style = "display: none;";
+            hintWanted.style = "display: block;";
             questionElement.textContent = currentQuestion.korean;
+            hintElement.textContent = currentQuestion.hint;
             optionsElement.innerHTML = '';
-            hintElement.classList.add('hidden');
+            optionsElement.classList.add('hidden');
+            inputSection.classList.remove('hidden');
+            answerInput.value = '';
             feedbackElement.textContent = '';
-
-            const options = getRandomOptions(currentQuestion);
-            options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.id = `option-${index}`;
-                button.className = 'w-full bg-gray-200 py-2 rounded hover:bg-gray-300 disabled:hover:bg-gray-200 anwser-button';
-                button.addEventListener('click', () => checkAnswer(option, button.id));
-                optionsElement.appendChild(button);
-            });
+            answerInput.focus();
         }
 
-        function checkAnswer(selected, buttonID) {
+        function checkAnswer(selected, buttonID = null) {
             if (checking) return;
 
             checking = true;
             total++;
 
-            const collection = document.getElementsByClassName("anwser-button");
-            for (let i = 0; i < collection.length; i++) {
-                collection[i].disabled = true;
+            if (isMultipleChoice) {
+                const collection = document.getElementsByClassName("answer-button");
+                for (let i = 0; i < collection.length; i++) {
+                    collection[i].disabled = true;
+                }
+            } else {
+                answerInput.disabled = true;
+                submitAnswer.disabled = true;
+                switchToMultipleChoice.disabled = true;
             }
 
-            if (selected === currentQuestion.english) {
+            const normalizedAnswer = selected.trim().toLowerCase();
+            const normalizedCorrect = currentQuestion.english.toLowerCase();
+
+            if (normalizedAnswer === normalizedCorrect) {
                 score++;
                 confetti({
                     angle: 155,
@@ -230,17 +232,15 @@
                     spread: 70,
                     origin: { x: 0.64, y: 0.4 },
                 });
-                document.getElementById(buttonID)?.classList.add('bg-green-600');
-                document.getElementById(buttonID)?.classList.add('hover:bg-green-600');
-                document.getElementById(buttonID)?.classList.add('disabled:hover:bg-green-600');
-
+                if (isMultipleChoice && buttonID) {
+                    document.getElementById(buttonID)?.classList.add('bg-green-600', 'hover:bg-green-600', 'disabled:hover:bg-green-600');
+                }
                 feedbackElement.textContent = 'Correct! Great job!';
                 feedbackElement.className = 'text-center text-lg font-medium text-green-600';
             } else {
-                document.getElementById(buttonID)?.classList.add('bg-red-600');
-                document.getElementById(buttonID)?.classList.add('hover:bg-red-600');
-                document.getElementById(buttonID)?.classList.add('disabled:hover:bg-red-600');
-
+                if (isMultipleChoice && buttonID) {
+                    document.getElementById(buttonID)?.classList.add('bg-red-600', 'hover:bg-red-600', 'disabled:hover:bg-red-600');
+                }
                 feedbackElement.textContent = `Oops! The correct answer was "${currentQuestion.english}".`;
                 feedbackElement.className = 'text-center text-lg font-medium text-red-600';
             }
@@ -248,10 +248,41 @@
             setTimeout(loadQuestion, 3000);
         }
 
-        hintButton.addEventListener('click', () => {
-            hintElement.textContent = currentQuestion.hint;
-            hintElement.classList.remove('hidden');
+        function switchToMultipleChoiceMode() {
+            isMultipleChoice = true;
+            inputSection.classList.add('hidden');
+            optionsElement.classList.remove('hidden');
+            optionsElement.innerHTML = '';
+
+            const options = getRandomOptions(currentQuestion);
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.id = `option-${index}`;
+                button.className = 'w-full bg-gray-200 py-2 rounded hover:bg-gray-300 disabled:hover:bg-gray-200 answer-button';
+                button.addEventListener('click', () => checkAnswer(option, button.id));
+                optionsElement.appendChild(button);
+            });
+        }
+
+        submitAnswer.addEventListener('click', () => {
+            if (answerInput.value.trim()) {
+                checkAnswer(answerInput.value);
+            }
         });
+
+        hintWanted.addEventListener('click', () => {
+            hintElement.style = "display: block;";
+            hintWanted.style = "display: none;";
+        });
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && answerInput.value.trim()) {
+                checkAnswer(answerInput.value);
+            }
+        });
+
+        switchToMultipleChoice.addEventListener('click', switchToMultipleChoiceMode);
 
         loadQuestion();
     </script>
