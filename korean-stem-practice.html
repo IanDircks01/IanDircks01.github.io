@@ -145,7 +145,7 @@
                     spread: 70,
                     origin: { x: 0.62, y: 0.4 },
                 });
-                feedbackElement.textContent = `Correct! "${currentVerb.stem}" is "${currentVerb.answer}".`;
+                feedbackElement.textContent = `Correct! "${currentVerb.stem}" is "${currentVerb.answer}". Definition: "${currentVerb.english}"`;
                 feedbackElement.classList.add('text-green-600');
                 feedbackElement.classList.remove('text-red-600');
             } else {
