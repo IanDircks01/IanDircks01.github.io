@@ -188,6 +188,9 @@
             currentQuestion = getRandomQuestion();
             hintElement.style = "display: none;";
             hintWanted.style = "display: block;";
+            answerInput.disabled = false;
+            submitAnswer.disabled = false;
+            switchToMultipleChoice.disabled = false;
             questionElement.textContent = currentQuestion.korean;
             hintElement.textContent = currentQuestion.hint;
             optionsElement.innerHTML = '';
@@ -218,7 +221,7 @@
             const normalizedAnswer = selected.trim().toLowerCase();
             const normalizedCorrect = currentQuestion.english.toLowerCase();
 
-            if (normalizedAnswer === normalizedCorrect) {
+            if (normalizedCorrect.includes(normalizedAnswer)) {
                 score++;
                 confetti({
                     angle: 155,
@@ -235,7 +238,7 @@
                 if (isMultipleChoice && buttonID) {
                     document.getElementById(buttonID)?.classList.add('bg-green-600', 'hover:bg-green-600', 'disabled:hover:bg-green-600');
                 }
-                feedbackElement.textContent = 'Correct! Great job!';
+                feedbackElement.textContent = `Correct! "${currentQuestion.english}"`;
                 feedbackElement.className = 'text-center text-lg font-medium text-green-600';
             } else {
                 if (isMultipleChoice && buttonID) {
