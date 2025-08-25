@@ -11,9 +11,22 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 class="text-2xl font-bold text-center mb-6">Korean Vocabulary Quiz</h1>
-        <div id="score" class="text-center mb-4">Score: 0/0</div>
-        <div id="question" class="text-xl font-semibold text-center mb-4"></div>
-        <div id="inputSection" class="mb-4">
+        <div id="categorySection" class="mb-6">
+            <label for="categorySelect" class="block mb-2 font-semibold text-center">Choose a Category:</label>
+            <select id="categorySelect" class="w-full p-2 border rounded mb-4">
+                <option value="">-- Select --</option>
+                <option value="sentence">Sentence Structure</option>
+                <option value="verb">Present Tense Verb Conjugation</option>
+                <option value="question">Questions & Responses</option>
+                <option value="place">Places & Activities</option>
+                <option value="numbers_native">Native Numbers</option>
+                <option value="numbers_sino">Sino-Korean Numbers</option>
+            </select>
+            <button id="startQuiz" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Start Quiz</button>
+        </div>
+        <div id="score" class="text-center mb-4 hidden">Score: 0/0</div>
+        <div id="question" class="text-xl font-semibold text-center mb-4 hidden"></div>
+        <div id="inputSection" class="mb-4 hidden">
             <input id="answerInput" type="text" class="w-full p-2 border rounded mb-4" placeholder="Type the English translation">
             <button id="submitAnswer" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mt-2">Submit Answer</button>
             <button id="hintWanted" class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 mt-2" style="display: block;">Get Hint</button>
@@ -58,112 +71,132 @@
             return gk_fileData[filename] || "";
         }
 
-        const vocabulary = [
-            // Week 3: Sentence Structure
-            { korean: "사람", english: "person", hint: "You see this being walking around everywhere in a city!" },
-            { korean: "친구", english: "friend", hint: "This is someone you hang out with and share secrets!" },
-            { korean: "가족", english: "family", hint: "The group you might gather with for Chuseok dinner." },
-            { korean: "엄마", english: "mom", hint: "She might make you kimchi jjigae when you're hungry." },
-            { korean: "아빠", english: "dad", hint: "He might teach you how to ride a bike." },
-            { korean: "남자", english: "man", hint: "XY" },
-            { korean: "여자", english: "woman", hint: "XX" },
-            { korean: "형", english: "older brother (to a guy)", hint: "A guy calls this older male sibling for advice." },
-            { korean: "오빠", english: "older brother (to a girl)", hint: "A girl might ask this guy to carry her heavy bag." },
-            { korean: "누나", english: "older sister (to a guy)", hint: "A guy might turn to her for fashion tips." },
-            { korean: "언니", english: "older sister (to a girl)", hint: "A girl might borrow her makeup." },
-            { korean: "동생", english: "younger sibling", hint: "The one you might tease but secretly protect." },
-            { korean: "책", english: "book", hint: "You flip its pages to dive into a story." },
-            { korean: "연필", english: "pencil", hint: "You use it to sketch or take notes in class." },
-            { korean: "의자", english: "chair", hint: "You sit on this during a long study session." },
-            { korean: "컴퓨터", english: "computer", hint: "You might play Starcraft on this." },
-            { korean: "가방", english: "bag", hint: "You carry your books and laptop in this." },
-            { korean: "전화", english: "call", hint: "You do this to chat with a friend far away." },
-            // Week 4: Present Tense Verb Conjugation
-            { korean: "가다", english: "to go", hint: "You do this to get to a K-pop concert." },
-            { korean: "오다", english: "to come", hint: "You do this when invited to a friend's house." },
-            { korean: "하다", english: "to do", hint: "The action you take to finish your homework." },
-            { korean: "먹다", english: "to eat", hint: "You do this with a bowl of bibimbap." },
-            { korean: "마시다", english: "to drink", hint: "You do this with a refreshing glass of soju." },
-            { korean: "자다", english: "to sleep", hint: "You do this after a long day of studying." },
-            { korean: "보다", english: "to see/watch", hint: "You do this to enjoy a K-drama." },
-            { korean: "읽다", english: "to read", hint: "You do this with a Korean manhwa." },
-            { korean: "공부하다", english: "to study", hint: "You do this to ace your Korean test." },
-            { korean: "일하다", english: "to work", hint: "You do this at a job to earn money." },
-            { korean: "듣다", english: "to listen", hint: "You do this to BTS's latest song." },
-            { korean: "만들다", english: "to make", hint: "You do this to create a homemade kimchi." },
-            // Week 5: Questions & Responses
-            { korean: "뭐", english: "what", hint: "You say this when you're confused about something." },
-            { korean: "누구", english: "who", hint: "You ask this to find out someone's identity." },
-            { korean: "어디", english: "where", hint: "You ask this to locate a K-pop store." },
-            { korean: "언제", english: "when", hint: "You ask this to know the time of a hanbok event." },
-            { korean: "왜", english: "why", hint: "You ask this to understand someone's reason." },
-            { korean: "어떻게", english: "how", hint: "You ask this to learn the way to make tteokbokki." },
-            { korean: "안", english: "not", hint: "You use this to say you won't do something." },
-            { korean: "네", english: "Yes", hint: "You say this to agree to try samgyeopsal." },
-            { korean: "아니요", english: "No", hint: "You say this to decline spicy food." },
-            { korean: "맞아요", english: "That's right", hint: "You say this when someone guesses correctly." },
-            { korean: "몰라요", english: "I don't know", hint: "You say this when clueless about a question." },
-            { korean: "안 해요", english: "(I/you/they) don't do", hint: "You say this to skip a task." },
-            { korean: "안 가요", english: "(I/you/they) don't go", hint: "You say this to stay home." },
-            { korean: "누구예요?", english: "Who are you/who is it?", hint: "You ask this at the door when someone knocks." },
-            { korean: "어디 가요?", english: "Where are you going?", hint: "You ask this when a friend is leaving." },
-            { korean: "언제 가요?", english: "When are you going?", hint: "You ask this to plan a trip with someone." },
-            // Week 6: Places & Activities
-            { korean: "에", english: "to/at", hint: "You use this to say you're heading to Seoul." },
-            { korean: "에서", english: "from/at", hint: "You use this to say you're calling from Busan." },
-            { korean: "앞(에)", english: "in front of", hint: "You stand here waiting for a friend at a store." },
-            { korean: "뒤(에)", english: "behind", hint: "You hide here during hide-and-seek." },
-            { korean: "옆(에)", english: "next to", hint: "You sit here beside your friend in class." },
-            { korean: "안(에)", english: "inside of", hint: "You go here to enter a cozy cafe." },
-            { korean: "밖(에)", english: "outside of", hint: "You wait here when the cafe is full." },
-            { korean: "위(에)", english: "above/over", hint: "You place a lamp here on a shelf." },
-            { korean: "아래(에)", english: "below/beneath", hint: "You find a lost pen here under the table." },
-            { korean: "밑(에)", english: "under", hint: "Your cat hides here under the bed." },
-            { korean: "집", english: "home/house", hint: "You return here after a long day." },
-            { korean: "학교", english: "school", hint: "You go here to learn Korean." },
-            { korean: "회사", english: "company", hint: "You work here to earn a living." },
-            { korean: "카페", english: "cafe", hint: "You sip coffee here with friends." },
-            { korean: "식당", english: "restaurant", hint: "You enjoy kalguksu here." },
-            { korean: "도서관", english: "library", hint: "You read quietly here." },
-            { korean: "시장", english: "market", hint: "You buy fresh kimchi here." },
-            { korean: "공원", english: "park", hint: "You jog or picnic here." },
-            { korean: "병원", english: "hospital", hint: "You visit here when feeling unwell." },
-            { korean: "은행", english: "bank", hint: "You save or withdraw money here." },
-            { korean: "여기", english: "Here", hint: "You say this to point out a spot right next to you." },
-            { korean: "거기", english: "There", hint: "You use this for a place near the listener, but not you." },
-            { korean: "저기", english: "Over There", hint: "You use this for a place far from both you and the listener." },
-            { korean: "이것", english: "This", hint: "You use this to refer to an object close to you." },
-            { korean: "그것", english: "That", hint: "You use this to refer to an object near the listener." },
-            { korean: "저것", english: "That Over There", hint: "You use this to refer to an object far from both you and the listener." },
-            // Week 7: Numbers & Time
-            { korean: "하나", english: "1 (Native)", hint: "The first number you learn in native Korean." },
-            { korean: "둘", english: "2 (Native)", hint: "The number of chopsticks you use to eat." },
-            { korean: "셋", english: "3 (Native)", hint: "The number of side dishes in a small meal." },
-            { korean: "넷", english: "4 (Native)", hint: "The number of seasons in Korea." },
-            { korean: "다섯", english: "5 (Native)", hint: "The number of fingers on one hand." },
-            { korean: "여섯", english: "6 (Native)", hint: "The number of members in some K-pop groups." },
-            { korean: "일곱", english: "7 (Native)", hint: "The number of colors in a rainbow." },
-            { korean: "여덟", english: "8 (Native)", hint: "The number of legs on a spider." },
-            { korean: "아홉", english: "9 (Native)", hint: "The number just before ten in native Korean." },
-            { korean: "열", english: "10 (Native)", hint: "The number of toes you have." },
-            { korean: "일", english: "1 (Sino)", hint: "The first number in Sino-Korean, used for dates." },
-            { korean: "이", english: "2 (Sino)", hint: "The Sino-Korean number for a pair." },
-            { korean: "삼", english: "3 (Sino)", hint: "The Sino-Korean number for March." },
-            { korean: "사", english: "4 (Sino)", hint: "The Sino-Korean number for April." },
-            { korean: "오", english: "5 (Sino)", hint: "The Sino-Korean number for May." },
-            { korean: "육", english: "6 (Sino)", hint: "The Sino-Korean number for June." },
-            { korean: "칠", english: "7 (Sino)", hint: "The Sino-Korean number for July." },
-            { korean: "팔", english: "8 (Sino)", hint: "The Sino-Korean number for August." },
-            { korean: "구", english: "9 (Sino)", hint: "The Sino-Korean number for September." },
-            { korean: "십", english: "10 (Sino)", hint: "The Sino-Korean number for October." }
-        ];
+        // Split vocabulary into categories
+        const vocabCategories = {
+            sentence: [
+                { korean: "사람", english: "person", hint: "You see this being walking around everywhere in a city!" },
+                { korean: "친구", english: "friend", hint: "This is someone you hang out with and share secrets!" },
+                { korean: "가족", english: "family", hint: "The group you might gather with for Chuseok dinner." },
+                { korean: "엄마", english: "mom", hint: "She might make you kimchi jjigae when you're hungry." },
+                { korean: "아빠", english: "dad", hint: "He might teach you how to ride a bike." },
+                { korean: "남자", english: "man", hint: "XY" },
+                { korean: "여자", english: "woman", hint: "XX" },
+                { korean: "형", english: "older brother (to a guy)", hint: "A guy calls this older male sibling for advice." },
+                { korean: "오빠", english: "older brother (to a girl)", hint: "A girl might ask this guy to carry her heavy bag." },
+                { korean: "누나", english: "older sister (to a guy)", hint: "A guy might turn to her for fashion tips." },
+                { korean: "언니", english: "older sister (to a girl)", hint: "A girl might borrow her makeup." },
+                { korean: "동생", english: "younger sibling", hint: "The one you might tease but secretly protect." },
+                { korean: "책", english: "book", hint: "You flip its pages to dive into a story." },
+                { korean: "연필", english: "pencil", hint: "You use it to sketch or take notes in class." },
+                { korean: "의자", english: "chair", hint: "You sit on this during a long study session." },
+                { korean: "컴퓨터", english: "computer", hint: "You might play Starcraft on this." },
+                { korean: "가방", english: "bag", hint: "You carry your books and laptop in this." },
+                { korean: "전화", english: "call", hint: "You do this to chat with a friend far away." }
+            ],
+            verb: [
+                { korean: "가다", english: "to go", hint: "You do this to get to a K-pop concert." },
+                { korean: "오다", english: "to come", hint: "You do this when invited to a friend's house." },
+                { korean: "하다", english: "to do", hint: "The action you take to finish your homework." },
+                { korean: "먹다", english: "to eat", hint: "You do this with a bowl of bibimbap." },
+                { korean: "마시다", english: "to drink", hint: "You do this with a refreshing glass of soju." },
+                { korean: "자다", english: "to sleep", hint: "You do this after a long day of studying." },
+                { korean: "보다", english: "to see/watch", hint: "You do this to enjoy a K-drama." },
+                { korean: "읽다", english: "to read", hint: "You do this with a Korean manhwa." },
+                { korean: "공부하다", english: "to study", hint: "You do this to ace your Korean test." },
+                { korean: "일하다", english: "to work", hint: "You do this at a job to earn money." },
+                { korean: "듣다", english: "to listen", hint: "You do this to BTS's latest song." },
+                { korean: "만들다", english: "to make", hint: "You do this to create a homemade kimchi." }
+            ],
+            question: [
+                { korean: "뭐", english: "what", hint: "You say this when you're confused about something." },
+                { korean: "누구", english: "who", hint: "You ask this to find out someone's identity." },
+                { korean: "어디", english: "where", hint: "You ask this to locate a K-pop store." },
+                { korean: "언제", english: "when", hint: "You ask this to know the time of a hanbok event." },
+                { korean: "왜", english: "why", hint: "You ask this to understand someone's reason." },
+                { korean: "어떻게", english: "how", hint: "You ask this to learn the way to make tteokbokki." },
+                { korean: "안", english: "not", hint: "You use this to say you won't do something." },
+                { korean: "네", english: "Yes", hint: "You say this to agree to try samgyeopsal." },
+                { korean: "아니요", english: "No", hint: "You say this to decline spicy food." },
+                { korean: "맞아요", english: "That's right", hint: "You say this when someone guesses correctly." },
+                { korean: "몰라요", english: "I don't know", hint: "You say this when clueless about a question." },
+                { korean: "안 해요", english: "(I/you/they) don't do", hint: "You say this to skip a task." },
+                { korean: "안 가요", english: "(I/you/they) don't go", hint: "You say this to stay home." },
+                { korean: "누구예요?", english: "Who are you/who is it?", hint: "You ask this at the door when someone knocks." },
+                { korean: "어디 가요?", english: "Where are you going?", hint: "You ask this when a friend is leaving." },
+                { korean: "언제 가요?", english: "When are you going?", hint: "You ask this to plan a trip with someone." }
+            ],
+            place: [
+                { korean: "에", english: "to/at", hint: "You use this to say you're heading to Seoul." },
+                { korean: "에서", english: "from/at", hint: "You use this to say you're calling from Busan." },
+                { korean: "앞(에)", english: "in front of", hint: "You stand here waiting for a friend at a store." },
+                { korean: "뒤(에)", english: "behind", hint: "You hide here during hide-and-seek." },
+                { korean: "옆(에)", english: "next to", hint: "You sit here beside your friend in class." },
+                { korean: "안(에)", english: "inside of", hint: "You go here to enter a cozy cafe." },
+                { korean: "밖(에)", english: "outside of", hint: "You wait here when the cafe is full." },
+                { korean: "위(에)", english: "above/over", hint: "You place a lamp here on a shelf." },
+                { korean: "아래(에)", english: "below/beneath", hint: "You find a lost pen here under the table." },
+                { korean: "밑(에)", english: "under", hint: "Your cat hides here under the bed." },
+                { korean: "집", english: "home/house", hint: "You return here after a long day." },
+                { korean: "학교", english: "school", hint: "You go here to learn Korean." },
+                { korean: "회사", english: "company", hint: "You work here to earn a living." },
+                { korean: "카페", english: "cafe", hint: "You sip coffee here with friends." },
+                { korean: "식당", english: "restaurant", hint: "You enjoy kalguksu here." },
+                { korean: "도서관", english: "library", hint: "You read quietly here." },
+                { korean: "시장", english: "market", hint: "You buy fresh kimchi here." },
+                { korean: "공원", english: "park", hint: "You jog or picnic here." },
+                { korean: "병원", english: "hospital", hint: "You visit here when feeling unwell." },
+                { korean: "은행", english: "bank", hint: "You save or withdraw money here." },
+                { korean: "여기", english: "Here", hint: "You say this to point out a spot right next to you." },
+                { korean: "거기", english: "There", hint: "You use this for a place near the listener, but not you." },
+                { korean: "저기", english: "Over There", hint: "You use this for a place far from both you and the listener." },
+                { korean: "이것", english: "This", hint: "You use this to refer to an object close to you." },
+                { korean: "그것", english: "That", hint: "You use this to refer to an object near the listener." },
+                { korean: "저것", english: "That Over There", hint: "You use this to refer to an object far from both you and the listener." }
+            ],
+            numbers_native: [
+                { korean: "하나", english: "1 (Native)", hint: "The first number you learn in native Korean." },
+                { korean: "둘", english: "2 (Native)", hint: "The number of chopsticks you use to eat." },
+                { korean: "셋", english: "3 (Native)", hint: "The number of side dishes in a small meal." },
+                { korean: "넷", english: "4 (Native)", hint: "The number of seasons in Korea." },
+                { korean: "다섯", english: "5 (Native)", hint: "The number of fingers on one hand." },
+                { korean: "여섯", english: "6 (Native)", hint: "The number of members in some K-pop groups." },
+                { korean: "일곱", english: "7 (Native)", hint: "The number of colors in a rainbow." },
+                { korean: "여덟", english: "8 (Native)", hint: "The number of legs on a spider." },
+                { korean: "아홉", english: "9 (Native)", hint: "The number just before ten in native Korean." },
+                { korean: "열", english: "10 (Native)", hint: "The number of toes you have." },
+                { korean: "스물", english: "20 (Native)", hint: "The number of fingers and toes you have." },
+                { korean: "서른", english: "30 (Native)", hint: "The age when many Koreans celebrate a big birthday." },
+                { korean: "마흔", english: "40 (Native)", hint: "The number of years in four decades." },
+                { korean: "쉰", english: "50 (Native)", hint: "Half a century in native Korean." }
+            ],
+            numbers_sino: [
+                { korean: "일", english: "1 (Sino)", hint: "The first number in Sino-Korean, used for dates." },
+                { korean: "이", english: "2 (Sino)", hint: "The Sino-Korean number for a pair." },
+                { korean: "삼", english: "3 (Sino)", hint: "The Sino-Korean number for March." },
+                { korean: "사", english: "4 (Sino)", hint: "The Sino-Korean number for April." },
+                { korean: "오", english: "5 (Sino)", hint: "The Sino-Korean number for May." },
+                { korean: "육", english: "6 (Sino)", hint: "The Sino-Korean number for June." },
+                { korean: "칠", english: "7 (Sino)", hint: "The Sino-Korean number for July." },
+                { korean: "팔", english: "8 (Sino)", hint: "The Sino-Korean number for August." },
+                { korean: "구", english: "9 (Sino)", hint: "The Sino-Korean number for September." },
+                { korean: "십", english: "10 (Sino)", hint: "The Sino-Korean number for October." },
+                { korean: "백", english: "100 (Sino)", hint: "The Sino-Korean number for one hundred." },
+                { korean: "천", english: "1,000 (Sino)", hint: "The Sino-Korean number for one thousand." },
+                { korean: "만", english: "10,000 (Sino)", hint: "The Sino-Korean number for ten thousand." }
+            ]
+        };
 
+        let vocabulary = [];
         let currentQuestion = null;
         let score = 0;
         let total = 0;
         let checking = false;
         let isMultipleChoice = false;
 
+        // DOM elements
+        const categorySection = document.getElementById('categorySection');
+        const categorySelect = document.getElementById('categorySelect');
+        const startQuiz = document.getElementById('startQuiz');
         const questionElement = document.getElementById('question');
         const optionsElement = document.getElementById('options');
         const inputSection = document.getElementById('inputSection');
@@ -207,6 +240,8 @@
             answerInput.value = '';
             feedbackElement.textContent = '';
             answerInput.focus();
+            questionElement.classList.remove('hidden');
+            scoreElement.classList.remove('hidden');
         }
 
         function checkAnswer(selected, buttonID = null) {
@@ -295,7 +330,25 @@
 
         switchToMultipleChoice.addEventListener('click', switchToMultipleChoiceMode);
 
-        loadQuestion();
+        // Category selection logic
+        startQuiz.addEventListener('click', () => {
+            const selected = categorySelect.value;
+            if (!selected || !vocabCategories[selected]) {
+                alert("Please select a category!");
+                return;
+            }
+            vocabulary = vocabCategories[selected];
+            score = 0;
+            total = 0;
+            scoreElement.textContent = `Score: 0/0`;
+            categorySection.classList.add('hidden');
+            loadQuestion();
+        });
+
+        // Hide quiz UI until category is picked
+        inputSection.classList.add('hidden');
+        questionElement.classList.add('hidden');
+        scoreElement.classList.add('hidden');
     </script>
 </body>
 </html>
